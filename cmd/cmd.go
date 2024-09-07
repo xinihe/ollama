@@ -726,14 +726,17 @@ func ShowHandler(cmd *cobra.Command, args []string) error {
 }
 
 func showInfo(resp *api.ShowResponse) {
-	arch := resp.ModelInfo["general.architecture"].(string)
-
 	modelData := [][]string{
-		{"arch", arch},
 		{"parameters", resp.Details.ParameterSize},
 		{"quantization", resp.Details.QuantizationLevel},
-		{"context length", fmt.Sprintf("%v", resp.ModelInfo[fmt.Sprintf("%s.context_length", arch)].(float64))},
-		{"embedding length", fmt.Sprintf("%v", resp.ModelInfo[fmt.Sprintf("%s.embedding_length", arch)].(float64))},
+	}
+	if resp.ModelInfo != nil {
+		arch := resp.ModelInfo["general.architecture"].(string)
+		modelData = append(modelData,
+			[]string{"arch", arch},
+			[]string{"context length", fmt.Sprintf("%v", resp.ModelInfo[fmt.Sprintf("%s.context_length", arch)].(float64))},
+			[]string{"embedding length", fmt.Sprintf("%v", resp.ModelInfo[fmt.Sprintf("%s.embedding_length", arch)].(float64))},
+		)
 	}
 
 	mainTableData := [][]string{
@@ -1418,6 +1421,8 @@ func NewCLI() *cobra.Command {
 				envVars["OLLAMA_TMPDIR"],
 				envVars["OLLAMA_FLASH_ATTENTION"],
 				envVars["OLLAMA_LLM_LIBRARY"],
+				envVars["OLLAMA_GPU_OVERHEAD"],
+				envVars["OLLAMA_LOAD_TIMEOUT"],
 			})
 		default:
 			appendEnvDocs(cmd, envs)
